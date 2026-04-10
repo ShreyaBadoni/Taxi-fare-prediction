@@ -2,4 +2,7 @@ flask
 pandas
 numpy
 scikit-learn
+xgboost
+matplotlib
+seaborn
 gunicorn

@@ -1,58 +1,281 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Taxi Fare Predictor</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taxi Fare Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    header h1 { font-size: 2rem; color: #f8fafc; }
+    header p  { color: #94a3b8; margin-top: 6px; font-size: 0.95rem; }
+
+    /* Model badge */
+    .model-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
+    .model-badge span { color: #38bdf8; font-weight: 600; }
+
+    /* Card */
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #334155;
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="number"]:focus, select:focus {
+      border-color: #38bdf8;
+    }
+    .hint { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+
+    /* Row layout */
+    .row { display: flex; gap: 16px; }
+    .row .form-group { flex: 1; }
+
+    /* Errors */
+    .errors {
+      background: #450a0a;
+      border: 1px solid #dc2626;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 0.875rem;
+      color: #fca5a5;
+    }
+    .errors ul { padding-left: 18px; }
+
+    /* Submit button */
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 8px;
+    }
+    button[type="submit"]:hover { opacity: 0.9; }
+
+    /* Result */
+    .result-card {
+      background: linear-gradient(135deg, #0c4a6e, #1e1b4b);
+      border: 1px solid #0ea5e9;
+      border-radius: 16px;
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+      margin-bottom: 24px;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-card .label { font-size: 0.85rem; color: #7dd3fc; margin-bottom: 8px; }
+    .result-card .fare {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #f0f9ff;
+      letter-spacing: -1px;
+    }
+    .result-card .fare sup { font-size: 1.5rem; vertical-align: super; }
+
+    .trip-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #1e40af;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat .val { font-size: 1.1rem; font-weight: 700; color: #e0f2fe; }
+    .stat .key { font-size: 0.72rem; color: #7dd3fc; margin-top: 2px; }
+
+    /* Metrics bar */
+    .metrics {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .metric-pill {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .metric-pill .mv { font-size: 1.2rem; font-weight: 700; color: #38bdf8; }
+    .metric-pill .mk { font-size: 0.72rem; color: #64748b; margin-top: 2px; }
+
+    footer {
+      color: #475569;
+      font-size: 0.8rem;
+      margin-top: 16px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🚕 Taxi Fare Prediction</h1>
-    <p>Enter trip details below</p>
+  <header>
+    <h1>🚕 Taxi Fare Predictor</h1>
+    <p>Chicago taxi fare estimation using machine learning</p>
+    <div class="model-badge">
+      Model: <span>{{ model_name }}</span>
+      {% if metrics %}
+        &nbsp;·&nbsp; R² <span>{{ "%.4f"|format(metrics.get("R2", 0)) }}</span>
+        &nbsp;·&nbsp; RMSE <span>${{ "%.2f"|format(metrics.get("RMSE", 0)) }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Model metrics pills -->
+  {% if metrics %}
+  <div class="metrics">
+    <div class="metric-pill">
+      <div class="mv">{{ "%.4f"|format(metrics.get("R2", 0)) }}</div>
+      <div class="mk">R² Score</div>
+    </div>
+    <div class="metric-pill">
+      <div class="mv">${{ "%.2f"|format(metrics.get("RMSE", 0)) }}</div>
+      <div class="mk">RMSE</div>
+    </div>
+    <div class="metric-pill">
+      <div class="mv">${{ "%.2f"|format(metrics.get("MAE", 0)) }}</div>
+      <div class="mk">MAE</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Result -->
+  {% if result %}
+  <div class="result-card">
+    <div class="label">Estimated Fare</div>
+    <div class="fare"><sup>$</sup>{{ "%.2f"|format(result.fare) }}</div>
+    <div class="trip-stats">
+      <div class="stat"><div class="val">{{ result.miles }} mi</div><div class="key">Distance</div></div>
+      <div class="stat"><div class="val">{{ result.minutes }} min</div><div class="key">Duration</div></div>
+      <div class="stat"><div class="val">{{ result.speed }} mph</div><div class="key">Avg Speed</div></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Form -->
+  <div class="card">
+    <h2>Trip Details</h2>
+
+    {% if errors %}
+    <div class="errors">
+      <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
 
     <form method="POST">
-        <table id="inputTable">
-            <thead>
-                <tr>
-                    <th>Distance (km)</th>
-                    <th>Duration (sec)</th>
-                    <th>Speed (km/h)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="number" step="0.1" name="distance" required></td>
-                    <td><input type="number" step="1" name="duration" required></td>
-                    <td><input type="number" step="0.1" name="speed" required></td>
-                </tr>
-            </tbody>
-        </table>
+      <div class="row">
+        <div class="form-group">
+          <label for="miles">Trip Distance (miles)</label>
+          <input type="number" id="miles" name="miles" step="0.01" min="0.01"
+                 placeholder="e.g. 3.5"
+                 value="{{ form_data.get('miles', '') }}" required />
+          <div class="hint">Enter distance in miles</div>
+        </div>
+        <div class="form-group">
+          <label for="seconds">Trip Duration (seconds)</label>
+          <input type="number" id="seconds" name="seconds" step="1" min="1"
+                 placeholder="e.g. 900"
+                 value="{{ form_data.get('seconds', '') }}" required />
+          <div class="hint">e.g. 15 min = 900 sec</div>
+        </div>
+      </div>
 
-        <button type="button" onclick="addRow()">➕ Add Row</button>
-        <button type="submit">Predict</button>
+      {% if "PICKUP_HOUR" in features %}
+      <div class="row">
+        <div class="form-group">
+          <label for="hour">Pickup Hour (0–23)</label>
+          <input type="number" id="hour" name="hour" min="0" max="23"
+                 placeholder="e.g. 8 for 8AM"
+                 value="{{ form_data.get('hour', 0) }}" />
+          <div class="hint">Rush hours: 7–9 AM, 5–7 PM</div>
+        </div>
+        <div class="form-group">
+          <label for="weekend">Weekend?</label>
+          <select id="weekend" name="weekend">
+            <option value="0" {% if form_data.get('weekend', 0) == 0 %}selected{% endif %}>No (Weekday)</option>
+            <option value="1" {% if form_data.get('weekend', 0) == 1 %}selected{% endif %}>Yes (Weekend)</option>
+          </select>
+        </div>
+      </div>
+      {% endif %}
+
+      <button type="submit">Predict Fare →</button>
     </form>
+  </div>
 
-    {% if error %}
-        <div class="error">{{ error }}</div>
-    {% endif %}
-
-    {% if result %}
-        <h2>Prediction Results</h2>
-        {{ result|safe }}
-    {% endif %}
-</div>
-
-<script>
-function addRow() {
-    const table = document.getElementById("inputTable").getElementsByTagName("tbody")[0];
-    const row = table.insertRow();
-    row.innerHTML = `
-        <td><input type="number" step="0.1" name="distance" required></td>
-        <td><input type="number" step="1" name="duration" required></td>
-        <td><input type="number" step="0.1" name="speed" required></td>
-    `;
-}
-</script>
+  <footer>Chicago Taxi Dataset &nbsp;·&nbsp; Trained with {{ model_name }}</footer>
 
 </body>
 </html>
